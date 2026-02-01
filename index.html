@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>营养小管家 - 饮食记录 & 体重管理</title>
+<!-- 桌面图标 & PWA 配置 -->
+<link rel="apple-touch-icon" sizes="180x180" href="https://picsum.photos/id/1080/180/180">
+<link rel="icon" type="image/png" sizes="192x192" href="https://picsum.photos/id/1080/192/192">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi55Gc5YWG5bCR5bCu5ZOlIiwic2hvcnRfbmFtZSI6IuWRveWFpOWvueWKoCIsImljb25zIjpbeyJzcmMiOiJodHRwczovL3BpY3N1bS5waG90b3MvaWQvMTA4MC8xOTIvMTkyIiwic2l6ZSI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dLCJzdGFydF91cmwiOiIuLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZGY2ZjkiLCJ0aGVtZV9jb2xvciI6IiNmZDc5YWMifQ==">
+<meta name="theme-color" content="#ff7b9c">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ff7b9c">
 <style>
 * {
   margin: 0;
@@ -68,7 +74,7 @@ body::after {
   font-weight: 500;
 }
 
-/* 选项卡 */
+/* 选项卡 - 确保点击光标 */
 .tabbar {
   display: flex;
   background: white;
@@ -84,10 +90,14 @@ body::after {
   font-size: 0.95rem;
   cursor: pointer;
   color: #666;
+  transition: all 0.2s ease;
 }
 .tab.active {
   background: #ff7b9c;
   color: white;
+}
+.tab:hover {
+  background: #fef0f5;
 }
 
 /* 卡片 */
@@ -146,12 +156,19 @@ body::after {
   border-radius: 12px;
   font-size: 0.95rem;
   outline: none;
+  transition: border 0.2s ease;
 }
 .form-row input:focus,
 .form-row select:focus {
   border-color: #ff7b9c;
+  box-shadow: 0 0 0 2px rgba(255,123,156,0.1);
 }
 
+/* 按钮样式统一 - 补全光标和过渡 */
+.btn-mini, .btn {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
 .btn-mini {
   padding: 0.6rem 0.9rem;
   font-size: 0.9rem;
@@ -159,10 +176,15 @@ body::after {
   border: none;
   background: #ff7b9c;
   color: white;
-  cursor: pointer;
+}
+.btn-mini:hover {
+  background: #ff6890;
 }
 .btn-mini.danger {
   background: #ff6b6b;
+}
+.btn-mini.danger:hover {
+  background: #ff5555;
 }
 
 .info-row {
@@ -216,6 +238,9 @@ body::after {
   cursor: pointer;
   font-weight: bold;
 }
+.fav-item .del:hover {
+  color: #ff5555;
+}
 
 /* 餐食列表 */
 .meal-list .item {
@@ -247,6 +272,7 @@ body::after {
   height: 100%;
   background: #ff7b9c;
   border-radius: 5px;
+  transition: width 0.3s ease;
 }
 
 /* 每餐对比 */
@@ -259,10 +285,10 @@ body::after {
   color: #555;
 }
 
-/* 图表 */
+/* 图表 - 确保容器正常 */
 canvas {
-  width: 100%;
-  height: 190px;
+  width: 100% !important;
+  height: 190px !important;
   border-radius: 12px;
   margin-top: 0.7rem;
   background: #fdf6f9;
@@ -308,15 +334,20 @@ canvas {
   line-height: 1.5;
 }
 
-/* 内容区 */
+/* 内容区 - 确保切换流畅 */
 .tab-content {
   display: none;
+  animation: fadeIn 0.3s ease;
 }
 .tab-content.show {
   display: block;
 }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-/* 分享按钮 */
+/* 分享按钮 - 优化hover */
 .share-btn {
   position: fixed;
   bottom: 20px;
@@ -333,6 +364,22 @@ canvas {
   box-shadow: 0 4px 12px rgba(255,123,156,0.3);
   cursor: pointer;
   z-index: 100;
+  transition: all 0.2s ease;
+}
+.share-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(255,123,156,0.4);
+}
+
+/* 全局按钮统一hover */
+button.btn {
+  transition: background 0.2s ease;
+}
+button.btn:hover {
+  background: #ff6890 !important;
+}
+button.btn.danger:hover {
+  background: #ff5555 !important;
 }
 </style>
 </head>
@@ -360,7 +407,7 @@ canvas {
     <div class="form-row">
       <select id="gender">
         <option value="male">男</option>
-        <option value="female">女</option>
+        <option value="female" selected>女</option>
       </select>
       <input type="number" id="age" placeholder="年龄" value="25">
       <input type="number" id="height" placeholder="身高(cm)" value="165">
@@ -369,19 +416,19 @@ canvas {
     <div class="form-row">
       <select id="activity">
         <option value="1.2">久坐</option>
-        <option value="1.375">轻度活动</option>
+        <option value="1.375" selected>轻度活动</option>
         <option value="1.55">中度活动</option>
         <option value="1.725">高度活动</option>
         <option value="1.9">极高活动</option>
       </select>
       <select id="mode">
         <option value="maintain">维持</option>
-        <option value="lose">减脂</option>
+        <option value="lose" selected>减脂</option>
         <option value="gain">增肌</option>
         <option value="pregnant">孕妇</option>
       </select>
     </div>
-    <button class="btn" onclick="calcTarget()" style="width:100%;padding:0.9rem;border-radius:12px;background:#ff7b9c;color:white;border:none;font-weight:500;cursor:pointer;">计算推荐摄入</button>
+    <button class="btn" onclick="calcTarget()" style="width:100%;padding:0.9rem;border-radius:12px;background:#ff7b9c;color:white;border:none;font-weight:500;">计算推荐摄入</button>
   </div>
 
   <div class="card card-target" id="targetCard" style="display:none">
@@ -417,7 +464,7 @@ canvas {
   <div class="card card-search">
     <h2>🔍 食物搜索</h2>
     <div class="form-row">
-      <input type="text" id="searchFood" placeholder="输入食物名" oninput="onSearchInput()">
+      <input type="text" id="searchFood" placeholder="输入食物名（支持拼音首字母）" oninput="onSearchInput()">
       <button class="btn-mini" onclick="fillFood()">填充</button>
       <button class="btn-mini" onclick="toggleFav()">收藏</button>
     </div>
@@ -427,9 +474,9 @@ canvas {
 
   <div class="card card-food">
     <h2>🥗 食物录入</h2>
-    <div class="form-row">
-      <input type="number" id="foodGram" placeholder="重量(g)" value="100">
-    </div>
+   <div class="form-row">
+  <input type="number" id="foodGram" placeholder="重量(g)" value="100" oninput="calcFoodByGram()">
+</div>
     <div class="nutri-row">
       <span>热量：<span id="foodCal">0</span> kcal</span>
       <span>蛋白：<span id="foodPro">0</span> g</span>
@@ -482,7 +529,7 @@ canvas {
     </div>
   </div>
 
-  <button class="btn danger" onclick="clearAll()" style="margin-bottom:2rem;width:100%;padding:0.9rem;border-radius:12px;background:#ff6b6b;color:white;border:none;font-weight:500;cursor:pointer;">清空今日记录</button>
+  <button class="btn danger" onclick="clearAll()" style="margin-bottom:2rem;width:100%;padding:0.9rem;border-radius:12px;background:#ff6b6b;color:white;border:none;font-weight:500;">清空今日记录</button>
 </div>
 
 <!-- ========== 体重图表 ========== -->
@@ -491,7 +538,7 @@ canvas {
     <h2>✍️ 今日体重</h2>
     <div class="form-row">
       <input type="number" step="0.1" id="todayWeight" placeholder="体重(kg)">
-      <button class="btn" onclick="saveWeight()" style="padding:0.8rem 1.2rem;border-radius:12px;background:#ff7b9c;color:white;border:none;font-weight:500;cursor:pointer;">保存</button>
+      <button class="btn" onclick="saveWeight()" style="padding:0.8rem 1.2rem;border-radius:12px;background:#ff7b9c;color:white;border:none;font-weight:500;">保存</button>
     </div>
   </div>
   <div class="card">
@@ -500,7 +547,9 @@ canvas {
   </div>
   <div class="card">
     <h2>📋 历史记录</h2>
-    <div id="weightHistory"></div>
+    <div id="weightHistory" style="min-height: 60px; display: flex; align-items: center; justify-content: center; color: #999;">
+      暂无体重记录，添加后自动展示趋势和历史
+    </div>
   </div>
 </div>
 
@@ -508,8 +557,8 @@ canvas {
 <div id="report" class="tab-content">
   <div class="card card-report">
     <h2>📄 今日营养分析报告</h2>
-    <div id="reportContent" class="report">请先计算推荐目标并记录饮食</div>
-    <button class="btn" onclick="genReport()" style="width:100%;padding:0.9rem;border-radius:12px;background:#ff7b9c;color:white;border:none;font-weight:500;cursor:pointer;">生成报告</button>
+    <div id="reportContent" class="report">请先在【饮食记录】中计算推荐目标并记录今日饮食，再生成分析报告</div>
+    <button class="btn" onclick="genReport()" style="width:100%;margin-top:1rem;padding:0.9rem;border-radius:12px;background:#ff7b9c;color:white;border:none;font-weight:500;">生成报告</button>
   </div>
 </div>
 
@@ -518,39 +567,213 @@ canvas {
   <div class="card card-recipe">
     <h2>🍱 个性化食谱推荐</h2>
     <div id="recipeList"></div>
-    <button class="btn" onclick="genRecipe()" style="width:100%;padding:0.9rem;border-radius:12px;background:#ff7b9c;color:white;border:none;font-weight:500;cursor:pointer;">刷新推荐</button>
+    <button class="btn" onclick="genRecipe()" style="width:100%;margin-top:1rem;padding:0.9rem;border-radius:12px;background:#ff7b9c;color:white;border:none;font-weight:500;">刷新推荐</button>
   </div>
 </div>
 
 <script>
 // ==============================
-// 内置食物库
+// 内置食物库 - 修复重复const
 // ==============================
 const FOOD_DB = {
+  // 主食类
   "白米饭": { cal: 116, pro: 2.6, fat: 0.3, car: 25.9 },
   "糙米饭": { cal: 110, pro: 2.6, fat: 0.9, car: 23.8 },
+  "黑米饭": { cal: 112, pro: 3.0, fat: 1.0, car: 24.2 },
+  "燕麦饭": { cal: 105, pro: 3.5, fat: 1.5, car: 21.0 },
+  "小米饭": { cal: 116, pro: 3.5, fat: 1.2, car: 24.0 },
+  "藜麦饭": { cal: 120, pro: 4.4, fat: 1.5, car: 21.3 },
   "馒头": { cal: 223, pro: 7.0, fat: 1.1, car: 45.7 },
-  "面条": { cal: 110, pro: 2.7, fat: 0.2, car: 23.5 },
+  "全麦馒头": { cal: 190, pro: 8.0, fat: 1.5, car: 39.0 },
+  "花卷": { cal: 211, pro: 6.5, fat: 1.0, car: 43.0 },
+  "面条(熟)": { cal: 110, pro: 2.7, fat: 0.2, car: 23.5 },
+  "全麦面条": { cal: 125, pro: 4.5, fat: 1.5, car: 23.0 },
+  "意面(熟)": { cal: 130, pro: 5.0, fat: 1.0, car: 25.0 },
+  "荞麦面": { cal: 100, pro: 3.5, fat: 0.8, car: 20.0 },
+  "白面包": { cal: 265, pro: 8.0, fat: 3.2, car: 49.0 },
+  "全麦面包": { cal: 240, pro: 9.0, fat: 3.5, car: 42.0 },
+  "吐司": { cal: 250, pro: 8.5, fat: 3.0, car: 47.0 },
+  "法棍": { cal: 280, pro: 8.0, fat: 1.5, car: 55.0 },
+  "贝果": { cal: 250, pro: 9.0, fat: 1.0, car: 50.0 },
+  "玉米(鲜)": { cal: 96, pro: 3.4, fat: 1.5, car: 19.0 },
+  "红薯": { cal: 86, pro: 1.6, fat: 0.1, car: 20.1 },
+  "紫薯": { cal: 86, pro: 1.6, fat: 0.1, car: 20.0 },
+  "山药": { cal: 57, pro: 1.9, fat: 0.2, car: 12.4 },
+  "芋头": { cal: 77, pro: 2.2, fat: 0.2, car: 18.1 },
+  "土豆": { cal: 77, pro: 2.0, fat: 0.2, car: 17.2 },
+  "莲藕": { cal: 70, pro: 2.6, fat: 0.1, car: 15.2 },
+  "南瓜": { cal: 26, pro: 1.0, fat: 0.1, car: 6.5 },
+  // 肉蛋类
   "鸡胸肉": { cal: 118, pro: 23.1, fat: 2.2, car: 0 },
+  "鸡腿肉(去皮)": { cal: 130, pro: 21.0, fat: 4.5, car: 0 },
+  "火鸡胸肉": { cal: 105, pro: 23.0, fat: 1.0, car: 0 },
   "瘦牛肉": { cal: 125, pro: 20.2, fat: 4.2, car: 1.3 },
+  "牛里脊": { cal: 105, pro: 22.0, fat: 1.5, car: 0 },
+  "瘦猪肉": { cal: 143, pro: 20.3, fat: 6.2, car: 0 },
+  "猪里脊": { cal: 110, pro: 21.5, fat: 2.0, car: 0 },
+  "羊肉(瘦)": { cal: 118, pro: 20.5, fat: 3.5, car: 0 },
+  "猪肝": { cal: 130, pro: 19.3, fat: 3.5, car: 5.0 },
+  "鸡肝": { cal: 120, pro: 17.0, fat: 4.8, car: 2.0 },
   "鸡蛋": { cal: 143, pro: 12.6, fat: 9.9, car: 1.5 },
+  "蛋清": { cal: 52, pro: 11.6, fat: 0.1, car: 1.1 },
+  "蛋黄": { cal: 323, pro: 15.9, fat: 26.5, car: 3.5 },
+  "鸭蛋": { cal: 130, pro: 12.0, fat: 8.7, car: 2.0 },
+  "鹌鹑蛋": { cal: 160, pro: 12.8, fat: 11.0, car: 2.1 },
+  // 水产类
   "三文鱼": { cal: 142, pro: 20.8, fat: 6.3, car: 0 },
-  "牛奶": { cal: 54, pro: 3.2, fat: 3.2, car: 3.4 },
+  "金枪鱼(水浸)": { cal: 110, pro: 23.5, fat: 1.0, car: 0 },
+  "鳕鱼": { cal: 82, pro: 17.8, fat: 0.7, car: 0 },
+  "龙利鱼": { cal: 85, pro: 18.0, fat: 1.0, car: 0 },
+  "巴沙鱼": { cal: 85, pro: 18.0, fat: 1.0, car: 0 },
+  "鲈鱼": { cal: 105, pro: 18.6, fat: 3.4, car: 0 },
+  "鲫鱼": { cal: 110, pro: 17.1, fat: 4.0, car: 3.0 },
+  "草鱼": { cal: 112, pro: 16.6, fat: 5.2, car: 0 },
+  "虾(鲜)": { cal: 85, pro: 18.0, fat: 1.0, car: 0 },
+  "虾仁": { cal: 80, pro: 17.5, fat: 0.8, car: 0 },
+  "扇贝肉": { cal: 60, pro: 12.0, fat: 0.5, car: 2.0 },
+  "花蛤": { cal: 62, pro: 10.0, fat: 1.0, car: 2.0 },
+  "鱿鱼": { cal: 75, pro: 17.0, fat: 1.0, car: 2.0 },
+  "海参": { cal: 26, pro: 5.0, fat: 0.1, car: 0 },
+  // 豆制品
+  "豆腐(北)": { cal: 76, pro: 8.1, fat: 4.8, car: 2.8 },
+  "豆腐(南)": { cal: 60, pro: 6.0, fat: 3.5, car: 2.0 },
+  "嫩豆腐": { cal: 55, pro: 5.5, fat: 3.0, car: 1.5 },
+  "冻豆腐": { cal: 100, pro: 10.0, fat: 5.0, car: 3.0 },
+  "千张/豆皮": { cal: 260, pro: 24.0, fat: 18.0, car: 5.0 },
+  "腐竹": { cal: 460, pro: 44.0, fat: 22.0, car: 20.0 },
+  "豆干": { cal: 140, pro: 16.0, fat: 6.0, car: 4.0 },
+  "素鸡": { cal: 190, pro: 17.0, fat: 12.0, car: 4.0 },
+  "豆浆(无糖)": { cal: 30, pro: 2.5, fat: 1.0, car: 1.5 },
+  "豆腐脑(无糖)": { cal: 15, pro: 1.5, fat: 0.5, car: 1.0 },
+  // 奶类
+  "全脂牛奶": { cal: 62, pro: 3.2, fat: 3.2, car: 4.8 },
+  "低脂牛奶": { cal: 43, pro: 3.4, fat: 1.0, car: 5.0 },
+  "脱脂牛奶": { cal: 35, pro: 3.4, fat: 0.1, car: 5.0 },
   "无糖酸奶": { cal: 72, pro: 4.0, fat: 1.5, car: 7.0 },
-  "豆腐": { cal: 76, pro: 8.1, fat: 4.8, car: 2.8 },
-  "苹果": { cal: 52, pro: 0.3, fat: 0.2, car: 13.8 },
-  "香蕉": { cal: 89, pro: 1.1, fat: 0.3, car: 22.8 },
+  "全脂酸奶": { cal: 90, pro: 3.5, fat: 4.0, car: 9.0 },
+  "希腊酸奶(无糖)": { cal: 100, pro: 10.0, fat: 0.5, car: 6.0 },
+  "奶酪(低脂)": { cal: 180, pro: 20.0, fat: 10.0, car: 1.0 },
+  "奶油奶酪": { cal: 350, pro: 8.0, fat: 34.0, car: 2.0 },
+  // 蔬菜类
   "西兰花": { cal: 34, pro: 2.8, fat: 0.4, car: 6.6 },
   "菠菜": { cal: 23, pro: 2.9, fat: 0.4, car: 3.6 },
-  "杏仁": { cal: 579, pro: 21.1, fat: 49.9, car: 14.3 },
-  "核桃": { cal: 654, pro: 15.2, fat: 65.2, car: 13.9 },
-  "红薯": { cal: 86, pro: 1.6, fat: 0.1, car: 20.1 },
-  "土豆": { cal: 77, pro: 2.0, fat: 0.2, car: 17.2 },
+  "生菜": { cal: 15, pro: 1.0, fat: 0.1, car: 2.0 },
+  "油麦菜": { cal: 15, pro: 1.2, fat: 0.2, car: 2.0 },
+  "小白菜": { cal: 15, pro: 1.5, fat: 0.2, car: 2.0 },
+  "上海青": { cal: 15, pro: 1.5, fat: 0.2, car: 2.0 },
+  "空心菜": { cal: 20, pro: 1.8, fat: 0.2, car: 3.0 },
+  "芹菜": { cal: 16, pro: 0.8, fat: 0.1, car: 3.0 },
+  "韭菜": { cal: 25, pro: 2.0, fat: 0.3, car: 4.0 },
+  "黄瓜": { cal: 15, pro: 0.6, fat: 0.2, car: 2.9 },
+  "冬瓜": { cal: 12, pro: 0.4, fat: 0.1, car: 2.6 },
+  "丝瓜": { cal: 20, pro: 1.0, fat: 0.2, car: 4.0 },
+  "苦瓜": { cal: 19, pro: 1.0, fat: 0.1, car: 4.0 },
   "番茄": { cal: 18, pro: 0.9, fat: 0.2, car: 3.9 },
-  "黄瓜": { cal: 15, pro: 0.6, fat: 0.2, car: 2.9 }
+  "圣女果": { cal: 22, pro: 1.0, fat: 0.2, car: 4.8 },
+  "茄子": { cal: 25, pro: 1.1, fat: 0.2, car: 5.0 },
+  "彩椒": { cal: 26, pro: 1.3, fat: 0.2, car: 5.5 },
+  "青椒": { cal: 22, pro: 1.1, fat: 0.2, car: 4.5 },
+  "金针菇": { cal: 32, pro: 2.4, fat: 0.4, car: 6.0 },
+  "香菇": { cal: 26, pro: 2.2, fat: 0.3, car: 5.0 },
+  "杏鲍菇": { cal: 31, pro: 1.3, fat: 0.1, car: 6.0 },
+  "木耳(干)": { cal: 250, pro: 10.0, fat: 0.5, car: 60.0 },
+  "海带": { cal: 13, pro: 0.9, fat: 0.2, car: 2.5 },
+  "紫菜(干)": { cal: 200, pro: 15.0, fat: 1.0, car: 40.0 },
+  "芦笋": { cal: 20, pro: 2.2, fat: 0.2, car: 3.8 },
+  "竹笋": { cal: 23, pro: 2.6, fat: 0.2, car: 3.5 },
+  "茭白": { cal: 23, pro: 1.8, fat: 0.2, car: 4.0 },
+  "娃娃菜": { cal: 13, pro: 1.2, fat: 0.1, car: 2.5 },
+  "茼蒿": { cal: 18, pro: 1.9, fat: 0.3, car: 3.0 },
+  // 水果类
+  "苹果": { cal: 52, pro: 0.3, fat: 0.2, car: 13.8 },
+  "梨": { cal: 57, pro: 0.3, fat: 0.2, car: 15.2 },
+  "香蕉": { cal: 89, pro: 1.1, fat: 0.3, car: 22.8 },
+  "橙子": { cal: 47, pro: 1.0, fat: 0.2, car: 11.8 },
+  "橘子": { cal: 43, pro: 0.8, fat: 0.1, car: 10.0 },
+  "柚子": { cal: 38, pro: 0.7, fat: 0.1, car: 9.5 },
+  "葡萄": { cal: 69, pro: 0.7, fat: 0.2, car: 18.0 },
+  "提子": { cal: 65, pro: 0.7, fat: 0.2, car: 17.0 },
+  "草莓": { cal: 32, pro: 0.7, fat: 0.3, car: 7.7 },
+  "蓝莓": { cal: 57, pro: 0.7, fat: 0.3, car: 14.5 },
+  "猕猴桃": { cal: 61, pro: 1.1, fat: 0.5, car: 14.7 },
+  "火龙果(白)": { cal: 51, pro: 1.1, fat: 0.2, car: 13.0 },
+  "火龙果(红)": { cal: 55, pro: 1.2, fat: 0.3, car: 13.5 },
+  "芒果": { cal: 60, pro: 0.8, fat: 0.2, car: 15.0 },
+  "木瓜": { cal: 39, pro: 0.5, fat: 0.1, car: 10.0 },
+  "菠萝": { cal: 50, pro: 0.8, fat: 0.1, car: 13.0 },
+  "西瓜": { cal: 30, pro: 0.6, fat: 0.1, car: 7.6 },
+  "哈密瓜": { cal: 34, pro: 0.5, fat: 0.1, car: 8.0 },
+  "桃子": { cal: 40, pro: 0.7, fat: 0.2, car: 10.0 },
+  "李子": { cal: 39, pro: 0.7, fat: 0.2, car: 9.5 },
+  "杏子": { cal: 48, pro: 1.0, fat: 0.2, car: 11.0 },
+  "大枣(鲜)": { cal: 125, pro: 1.0, fat: 0.2, car: 30.5 },
+  "冬枣": { cal: 110, pro: 1.0, fat: 0.2, car: 27.0 },
+  "山楂": { cal: 95, pro: 0.5, fat: 0.2, car: 24.0 },
+  "石榴": { cal: 83, pro: 1.4, fat: 0.3, car: 18.7 },
+  "柿子": { cal: 71, pro: 0.5, fat: 0.1, car: 18.5 },
+  "柠檬": { cal: 29, pro: 1.1, fat: 0.3, car: 9.0 },
+  "百香果": { cal: 97, pro: 2.2, fat: 0.7, car: 23.0 },
+  "牛油果": { cal: 160, pro: 2.0, fat: 15.0, car: 8.5 },
+  "椰子肉": { cal: 354, pro: 4.0, fat: 33.0, car: 15.0 },
+  // 坚果种子
+  "杏仁": { cal: 579, pro: 21.1, fat: 49.9, car: 14.3 },
+  "巴旦木": { cal: 575, pro: 21.0, fat: 49.0, car: 14.0 },
+  "核桃": { cal: 654, pro: 15.2, fat: 65.2, car: 13.9 },
+  "腰果": { cal: 553, pro: 18.2, fat: 43.8, car: 27.0 },
+  "开心果": { cal: 560, pro: 20.0, fat: 45.0, car: 17.0 },
+  "夏威夷果": { cal: 718, pro: 7.9, fat: 76.0, car: 10.0 },
+  "松子": { cal: 673, pro: 14.0, fat: 70.0, car: 13.0 },
+  "花生(生)": { cal: 567, pro: 25.8, fat: 49.2, car: 16.1 },
+  "花生(熟)": { cal: 580, pro: 26.0, fat: 50.0, car: 16.5 },
+  "南瓜子": { cal: 559, pro: 30.2, fat: 45.0, car: 11.0 },
+  "葵花籽": { cal: 584, pro: 21.0, fat: 51.0, car: 13.0 },
+  "芝麻(白)": { cal: 575, pro: 18.0, fat: 50.0, car: 18.0 },
+  "芝麻(黑)": { cal: 580, pro: 19.0, fat: 50.0, car: 18.0 },
+  "奇亚籽": { cal: 480, pro: 17.0, fat: 31.0, car: 38.0 },
+  "亚麻籽": { cal: 534, pro: 18.0, fat: 42.0, car: 29.0 },
+  // 零食/其他
+  "黑巧克力(85%+)": { cal: 604, pro: 8.0, fat: 43.0, car: 25.0 },
+  "牛奶巧克力": { cal: 539, pro: 6.0, fat: 31.0, car: 57.0 },
+  "白巧克力": { cal: 545, pro: 5.0, fat: 33.0, car: 59.0 },
+  "果冻(无糖)": { cal: 10, pro: 0.1, fat: 0, car: 2.5 },
+  "海苔(原味)": { cal: 30, pro: 3.0, fat: 0.5, car: 5.0 },
+  "爆米花(无油)": { cal: 380, pro: 12.0, fat: 4.0, car: 78.0 },
+  "薯片(原味)": { cal: 536, pro: 7.0, fat: 35.0, car: 53.0 },
+  "苏打饼干": { cal: 408, pro: 8.0, fat: 11.0, car: 71.0 },
+  "威化饼干": { cal: 500, pro: 5.0, fat: 25.0, car: 65.0 },
+  "曲奇饼干": { cal: 505, pro: 6.0, fat: 26.0, car: 63.0 },
+  "麦芽糖": { cal: 320, pro: 0, fat: 0, car: 82.0 },
+  "蜂蜜": { cal: 304, pro: 0.3, fat: 0, car: 82.4 },
+  "白砂糖": { cal: 400, pro: 0, fat: 0, car: 100.0 },
+  "冰糖": { cal: 395, pro: 0, fat: 0, car: 99.0 },
+  "红糖": { cal: 385, pro: 0.1, fat: 0, car: 97.0 },
+  // 油脂类
+  "橄榄油": { cal: 890, pro: 0, fat: 100.0, car: 0 },
+  "菜籽油": { cal: 890, pro: 0, fat: 100.0, car: 0 },
+  "花生油": { cal: 890, pro: 0, fat: 100.0, car: 0 },
+  "玉米油": { cal: 890, pro: 0, fat: 100.0, car: 0 },
+  "黄油": { cal: 717, pro: 0.5, fat: 81.0, car: 0.1 },
+  "椰子油": { cal: 890, pro: 0, fat: 100.0, car: 0 },
+  "沙拉酱(低脂)": { cal: 250, pro: 1.0, fat: 20.0, car: 15.0 },
+  "蛋黄酱": { cal: 680, pro: 1.0, fat: 75.0, car: 0.5 },
+  "番茄酱": { cal: 100, pro: 1.0, fat: 0.1, car: 24.0 },
+  "豆瓣酱": { cal: 130, pro: 6.0, fat: 7.0, car: 10.0 },
+  "生抽": { cal: 20, pro: 2.5, fat: 0.1, car: 2.0 },
+  "老抽": { cal: 15, pro: 2.0, fat: 0.1, car: 1.5 },
+  "醋": { cal: 30, pro: 0.1, fat: 0, car: 7.0 },
+  // 速食/加工
+  "即食鸡胸肉": { cal: 110, pro: 22.0, fat: 2.0, car: 0 },
+  "即食牛肉": { cal: 120, pro: 20.0, fat: 4.0, car: 0 },
+  "即食虾仁": { cal: 80, pro: 17.0, fat: 1.0, car: 0 },
+  "即食燕麦": { cal: 380, pro: 13.0, fat: 8.0, car: 65.0 },
+  "全麦麦片": { cal: 370, pro: 12.0, fat: 7.0, car: 64.0 },
+  "玉米片(原味)": { cal: 370, pro: 7.0, fat: 3.0, car: 80.0 },
+  "魔芋丝": { cal: 10, pro: 0.2, fat: 0, car: 2.0 },
+  "魔芋结": { cal: 10, pro: 0.2, fat: 0, car: 2.0 },
+  "豆腐丝": { cal: 250, pro: 22.0, fat: 17.0, car: 4.0 },
+  "素毛肚": { cal: 15, pro: 1.0, fat: 0.5, car: 2.0 }
 };
 const FOOD_NAMES = Object.keys(FOOD_DB);
-
 // ==============================
 // 全局状态（直接加载，无登录）
 // ==============================
@@ -565,9 +788,11 @@ let state = {
   currentFood: { name: '', gram: 100, cal: 0, pro: 0, fat: 0, car: 0 }
 };
 
-// 页面加载时直接加载本地数据
+// 页面加载时初始化 - 修复标签+加载数据+初始化食谱
 window.onload = function() {
   loadState();
+  genRecipe(); // 页面加载就生成默认食谱
+  renderWeightHistory(); // 初始化体重历史展示
 };
 
 // ==============================
@@ -578,7 +803,7 @@ function shareApp() {
   if (navigator.share) {
     navigator.share({
       title: '营养小管家 - 饮食记录 & 体重管理',
-      text: '超好用的饮食营养计算器，快来试试吧！',
+      text: '超好用的饮食营养计算器，精准管理减脂/增肌/日常饮食，快来试试吧！',
       url: url
     }).catch(err => {
       copyToClipboard(url);
@@ -599,28 +824,52 @@ function copyToClipboard(text) {
 }
 
 // ==============================
-// 选项卡切换
+// 选项卡切换 - 核心修复：标签索引计算错误
 // ==============================
 function switchTab(tab) {
+  // 移除所有标签和内容的激活状态
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('show'));
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  // 激活当前标签和内容
   document.getElementById(tab).classList.add('show');
-  document.querySelector(`.tab:nth-child(${tab === 'diet' ? 1 : tab === 'weight' ? 2 : tab === 'report' ? 3 : 4})`).classList.add('active');
+  // 精准匹配标签索引：diet=1, weight=2, report=3, recipe=4
+  let tabIndex = 1;
+  if (tab === 'weight') tabIndex = 2;
+  else if (tab === 'report') tabIndex = 3;
+  else if (tab === 'recipe') tabIndex = 4;
+  document.querySelector(`.tab:nth-child(${tabIndex})`).classList.add('active');
+  // 切换到体重标签时渲染图表
   if (tab === 'weight') drawWeightChart();
 }
 
 // ==============================
-// 搜索联想
+// 搜索联想（优化版，支持拼音首字母）
 // ==============================
 function onSearchInput() {
-  const key = document.getElementById('searchFood').value.trim();
+  const key = document.getElementById('searchFood').value.trim().toLowerCase();
   const suggestEl = document.getElementById('suggest');
   if (!key) {
     suggestEl.style.display = 'none';
     return;
   }
-  const list = FOOD_NAMES.filter(name => name.includes(key)).slice(0, 8);
-  suggestEl.innerHTML = list.map(name => `<div class="suggest-item" onclick="selectFood('${name}')">${name}</div>`).join('');
+  // 拼音首字母映射（只覆盖常用，够用）
+  const pinyinMap = {
+    'm': '米', 'f': '饭', 'mi': '面', 't': '糖', 'y': '鱼', 'j': '鸡', 'niu': '牛', 'zhu': '猪',
+    'd': '蛋', 'dou': '豆', 'tu': '土', 'yu': '玉', 'xiang': '香', 'qin': '芹', 'b': '白', 'h': '红',
+    's': '三', 'lan': '蓝', 'c': '菜', 'g': '瓜', 'shui': '水', 'guo': '果', 'n': '奶', 'you': '油'
+  };
+  // 匹配逻辑：包含关键词 或 拼音首字母匹配
+  const list = FOOD_NAMES.filter(name => {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes(key)) return true;
+    for (const p in pinyinMap) {
+      if (key === p && lowerName.includes(pinyinMap[p])) return true;
+    }
+    return false;
+  }).slice(0, 8);
+  suggestEl.innerHTML = list.map(name => `
+    <div class="suggest-item" onclick="selectFood('${name}')">${name}</div>
+  `).join('');
   suggestEl.style.display = 'block';
 }
 
@@ -628,24 +877,40 @@ function selectFood(name) {
   document.getElementById('searchFood').value = name;
   document.getElementById('suggest').style.display = 'none';
   state.currentFood.name = name;
+  // 选完自动重新计算克重
+  calcFoodByGram();
 }
 
 // ==============================
 // 填充营养
 // ==============================
+// 点击“填充”时，只记录食物名称，然后自动算克重
 function fillFood() {
   const name = document.getElementById('searchFood').value.trim();
-  const gram = parseInt(document.getElementById('foodGram').value) || 100;
   if (!name || !FOOD_DB[name]) {
-    alert('未找到该食物');
+    alert('未找到该食物，请检查名称是否正确');
     return;
   }
+  state.currentFood.name = name;
+  calcFoodByGram(); // 调用自动换算
+}
+
+// 按克自动实时换算营养值（输入克重时自动触发）
+function calcFoodByGram() {
+  const name = state.currentFood.name;
+  const gram = parseInt(document.getElementById('foodGram').value) || 100;
+
+  if (!name || !FOOD_DB[name]) return;
+
   const base = FOOD_DB[name];
   const cal = Math.round(base.cal * gram / 100);
   const pro = (base.pro * gram / 100).toFixed(1);
   const fat = (base.fat * gram / 100).toFixed(1);
   const car = (base.car * gram / 100).toFixed(1);
+
   state.currentFood = { name, gram, cal, pro, fat, car };
+
+  // 把算好的值显示到页面
   document.getElementById('foodCal').textContent = cal;
   document.getElementById('foodPro').textContent = pro;
   document.getElementById('foodFat').textContent = fat;
@@ -663,6 +928,10 @@ function toggleFav() {
 
 function renderFav() {
   const el = document.getElementById('favList');
+  if (state.favList.length === 0) {
+    el.innerHTML = '<div style="padding:0.8rem;text-align:center;color:#999;">暂无收藏食物</div>';
+    return;
+  }
   el.innerHTML = state.favList.map(name => `
     <div class="fav-item">
       <span onclick="selectFood('${name}');fillFood()">${name}</span>
@@ -674,17 +943,17 @@ function renderFav() {
 function addFav() {
   const name = state.currentFood.name;
   if (!name || !FOOD_DB[name]) {
-    alert('请先选择有效食物');
+    alert('请先选择并填充有效食物');
     return;
   }
   if (state.favList.includes(name)) {
-    alert('已收藏');
+    alert('该食物已加入收藏夹');
     return;
   }
   state.favList.push(name);
   localStorage.setItem('favList', JSON.stringify(state.favList));
   renderFav();
-  alert('收藏成功');
+  alert('收藏成功！');
 }
 
 function delFav(name) {
@@ -744,6 +1013,8 @@ function calcTarget() {
   renderMealSplit();
   calcTotal();
   saveState();
+  // 重新生成对应模式的食谱
+  genRecipe();
 }
 
 function renderTarget() {
@@ -771,7 +1042,7 @@ function renderMealSplit() {
 function addMeal(type) {
   const food = state.currentFood;
   if (!food.name || food.cal <= 0) {
-    alert('请先填充食物');
+    alert('请先搜索并填充食物营养信息');
     return;
   }
   state.foodData[type].push({ ...food });
@@ -782,6 +1053,10 @@ function addMeal(type) {
 
 function renderMeal(type) {
   const el = document.getElementById(`${type}List`);
+  if (state.foodData[type].length === 0) {
+    el.innerHTML = '<div style="padding:0.7rem;text-align:center;color:#999;">暂无记录</div>';
+    return;
+  }
   el.innerHTML = state.foodData[type].map((item, i) => `
     <div class="item">
       <span>${item.name} ${item.gram}g</span>
@@ -817,6 +1092,7 @@ function calcTotal() {
 
   state.total = total;
 
+  // 渲染总摄入
   document.getElementById('totalCal').textContent = total.cal;
   document.getElementById('totalPro').textContent = total.pro.toFixed(1);
   document.getElementById('totalFat').textContent = total.fat.toFixed(1);
@@ -826,36 +1102,41 @@ function calcTotal() {
   document.getElementById('totalFatTarget').textContent = state.target.fat;
   document.getElementById('totalCarTarget').textContent = state.target.car;
 
-  const calPer = Math.min((total.cal / state.target.cal) * 100, 100) || 0;
-  const proPer = Math.min((total.pro / state.target.pro) * 100, 100) || 0;
-  const fatPer = Math.min((total.fat / state.target.fat) * 100, 100) || 0;
-  const carPer = Math.min((total.car / state.target.car) * 100, 100) || 0;
+  // 计算进度百分比（不超过100%）
+  const calPer = state.target.cal === 0 ? 0 : Math.min((total.cal / state.target.cal) * 100, 100);
+  const proPer = state.target.pro === 0 ? 0 : Math.min((total.pro / state.target.pro) * 100, 100);
+  const fatPer = state.target.fat === 0 ? 0 : Math.min((total.fat / state.target.fat) * 100, 100);
+  const carPer = state.target.car === 0 ? 0 : Math.min((total.car / state.target.car) * 100, 100);
 
+  // 渲染总进度条
   document.getElementById('totalCalPer').style.width = calPer + '%';
   document.getElementById('totalProPer').style.width = proPer + '%';
   document.getElementById('totalFatPer').style.width = fatPer + '%';
   document.getElementById('totalCarPer').style.width = carPer + '%';
 
+  // 渲染每餐摄入
   document.getElementById('breakfastTotal').textContent = mealTotal.breakfast;
   document.getElementById('lunchTotal').textContent = mealTotal.lunch;
   document.getElementById('dinnerTotal').textContent = mealTotal.dinner;
   document.getElementById('snackTotal').textContent = mealTotal.snack;
 
-  document.getElementById('breakfastPer').style.width = Math.min((mealTotal.breakfast / state.mealSplit.breakfast) * 100, 100) + '%';
-  document.getElementById('lunchPer').style.width = Math.min((mealTotal.lunch / state.mealSplit.lunch) * 100, 100) + '%';
-  document.getElementById('dinnerPer').style.width = Math.min((mealTotal.dinner / state.mealSplit.dinner) * 100, 100) + '%';
-  document.getElementById('snackPer').style.width = Math.min((mealTotal.snack / state.mealSplit.snack) * 100, 100) + '%';
+  // 渲染每餐进度条
+  document.getElementById('breakfastPer').style.width = state.mealSplit.breakfast === 0 ? 0 : Math.min((mealTotal.breakfast / state.mealSplit.breakfast) * 100, 100) + '%';
+  document.getElementById('lunchPer').style.width = state.mealSplit.lunch === 0 ? 0 : Math.min((mealTotal.lunch / state.mealSplit.lunch) * 100, 100) + '%';
+  document.getElementById('dinnerPer').style.width = state.mealSplit.dinner === 0 ? 0 : Math.min((mealTotal.dinner / state.mealSplit.dinner) * 100, 100) + '%';
+  document.getElementById('snackPer').style.width = state.mealSplit.snack === 0 ? 0 : Math.min((mealTotal.snack / state.mealSplit.snack) * 100, 100) + '%';
 }
 
 // ==============================
 // 清空今日
 // ==============================
 function clearAll() {
-  if (!confirm('确定清空今日所有记录？')) return;
+  if (!confirm('确定清空今日所有饮食记录吗？此操作不可恢复')) return;
   state.foodData = { breakfast: [], lunch: [], dinner: [], snack: [] };
   ['breakfast', 'lunch', 'dinner', 'snack'].forEach(renderMeal);
   calcTotal();
   saveState();
+  alert('今日记录已清空');
 }
 
 // ==============================
@@ -868,6 +1149,14 @@ function saveState() {
 function loadState() {
   const s = localStorage.getItem('foodState');
   if (s) state = JSON.parse(s);
+  // 回显个人信息
+  document.getElementById('gender').value = state.profile.gender;
+  document.getElementById('age').value = state.profile.age;
+  document.getElementById('height').value = state.profile.height;
+  document.getElementById('weight').value = state.profile.weight;
+  document.getElementById('activity').value = state.profile.activity;
+  document.getElementById('mode').value = state.profile.mode;
+  // 渲染数据
   renderTarget();
   renderMealSplit();
   ['breakfast', 'lunch', 'dinner', 'snack'].forEach(renderMeal);
@@ -876,12 +1165,12 @@ function loadState() {
 }
 
 // ==============================
-// 体重记录
+// 体重记录 - 优化空数据展示
 // ==============================
 function saveWeight() {
   const w = parseFloat(document.getElementById('todayWeight').value);
   if (!w || w < 20 || w > 300) {
-    alert('请输入有效体重');
+    alert('请输入有效体重（20-300kg），支持小数点后1位');
     return;
   }
   const now = new Date();
@@ -890,17 +1179,23 @@ function saveWeight() {
   const idx = list.findIndex(item => item.date === date);
   if (idx >= 0) list[idx].weight = w;
   else list.push({ date, weight: w });
-  list.sort((a, b) => a.date.localeCompare(b.date));
+  // 按日期排序，保留近30天
+  list.sort((a, b) => new Date(a.date) - new Date(b.date));
   if (list.length > 30) list.splice(0, list.length - 30);
   state.weightList = list;
   localStorage.setItem('weightList', JSON.stringify(list));
   document.getElementById('todayWeight').value = '';
   renderWeightHistory();
   drawWeightChart();
+  alert('体重保存成功');
 }
 
 function renderWeightHistory() {
   const el = document.getElementById('weightHistory');
+  if (state.weightList.length === 0) {
+    el.innerHTML = '<div style="padding:0.7rem;text-align:center;color:#999;">暂无体重记录，添加后自动展示趋势和历史</div>';
+    return;
+  }
   el.innerHTML = state.weightList.map(item => `
     <div class="history-item">
       <span>${item.date}</span>
@@ -911,20 +1206,29 @@ function renderWeightHistory() {
 
 function drawWeightChart() {
   const list = state.weightList;
-  if (list.length < 2) return;
   const ctx = document.getElementById('weightChart').getContext('2d');
-  const canvas = ctx.canvas;
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
+  // 清空画布
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  // 无数据/单条数据不渲染折线
+  if (list.length < 2) {
+    ctx.fillStyle = '#999';
+    ctx.font = '0.95rem PingFang SC';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('至少添加2条体重记录以展示趋势', ctx.canvas.width/2, ctx.canvas.height/2);
+    return;
+  }
+  // 图表绘制逻辑
   const weights = list.map(i => i.weight);
   const minW = Math.min(...weights);
   const maxW = Math.max(...weights);
   const range = maxW - minW || 1;
   const pad = 30;
+  const w = ctx.canvas.width;
+  const h = ctx.canvas.height;
 
   ctx.strokeStyle = '#ff7b9c';
+  ctx.fillStyle = '#ff7b9c';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
   list.forEach((item, i) => {
@@ -932,7 +1236,12 @@ function drawWeightChart() {
     const y = h - pad - ((item.weight - minW) / range) * (h - 2 * pad);
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
+    // 绘制数据点
+    ctx.beginPath();
     ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
   });
   ctx.stroke();
 }
@@ -944,7 +1253,11 @@ function genReport() {
   const t = state.target;
   const total = state.total;
   if (t.cal === 0) {
-    document.getElementById('reportContent').textContent = '请先计算推荐目标';
+    document.getElementById('reportContent').textContent = '请先在【饮食记录】标签中计算个人推荐营养目标';
+    return;
+  }
+  if (total.cal === 0) {
+    document.getElementById('reportContent').textContent = '请先记录今日饮食，再生成营养分析报告';
     return;
   }
   const calPct = Math.round((total.cal / t.cal) * 100);
@@ -953,101 +1266,124 @@ function genReport() {
   const carPct = Math.round((total.car / t.car) * 100);
 
   let advice = '';
-  if (calPct < 80) advice = '今日热量摄入偏低，可适当增加主食或优质蛋白，避免代谢下降。';
-  else if (calPct > 120) advice = '今日热量摄入偏高，建议减少精制碳水与油脂，增加蔬菜比例。';
-  else advice = '今日热量摄入合理，继续保持。';
+  if (calPct < 80) advice = '今日热量摄入偏低，可适当增加主食或优质蛋白，避免基础代谢下降。';
+  else if (calPct > 120) advice = '今日热量摄入偏高，建议减少精制碳水与油炸食品，增加绿叶蔬菜比例。';
+  else advice = '今日热量摄入合理，继续保持当前饮食节奏。';
 
-  if (proPct < 70) advice += '\n蛋白质摄入不足，建议增加鸡胸肉、鱼虾、鸡蛋、豆制品。';
-  if (fatPct < 70) advice += '\n脂肪摄入偏低，可适量增加坚果、橄榄油、深海鱼。';
-  if (carPct < 70) advice += '\n碳水摄入偏低，可增加全谷物、薯类，保证供能。';
+  if (proPct < 70) advice += '\n蛋白质摄入不足，建议增加鸡胸肉、鱼虾、鸡蛋、豆制品等优质蛋白。';
+  if (fatPct < 70) advice += '\n健康脂肪摄入偏低，可适量增加坚果、橄榄油、深海鱼等。';
+  if (carPct < 70) advice += '\n碳水摄入偏低，可增加全谷物、薯类等复合碳水，保证身体供能。';
+  if (proPct > 130) advice += '\n蛋白质摄入偏高，若无增肌需求可适当减少，减轻肾脏代谢负担。';
+  if (fatPct > 130) advice += '\n脂肪摄入偏高，建议减少动物脂肪和油炸食品，选择植物油烹饪。';
+  if (carPct > 130) advice += '\n碳水摄入偏高，建议减少精制米面，替换为全谷物和薯类。';
 
   const report = `
 【今日营养分析报告】
-目标热量：${t.cal} kcal，实际摄入：${total.cal} kcal（${calPct}%）
-目标蛋白质：${t.pro} g，实际：${total.pro.toFixed(1)} g（${proPct}%）
-目标脂肪：${t.fat} g，实际：${total.fat.toFixed(1)} g（${fatPct}%）
-目标碳水：${t.car} g，实际：${total.car.toFixed(1)} g（${carPct}%）
+📊 摄入占比（实际/目标）：
+热量：${total.cal} / ${t.cal} kcal（${calPct}%）
+蛋白质：${total.pro.toFixed(1)} / ${t.pro} g（${proPct}%）
+脂肪：${total.fat.toFixed(1)} / ${t.fat} g（${fatPct}%）
+碳水：${total.car.toFixed(1)} / ${t.car} g（${carPct}%）
 
-【饮食建议】
-${advice}
+💡 个性化饮食建议：
+${advice || '今日各项营养摄入均衡，继续保持健康的饮食习惯！'}
 
-【中国居民膳食指南 2022 要点】
-• 谷薯类占每日主食 50% 以上
-• 每日蔬菜 ≥ 500g，深色蔬菜占一半
-• 每日奶类 300-500g
-• 每周吃鱼 ≥ 2 次
-• 控油 25-30g，限糖 ≤ 25g
+📖 中国居民膳食指南 2022 核心要点：
+• 谷薯类占每日主食 50% 以上，多吃全谷物
+• 每日蔬菜摄入量 ≥ 500g，深色蔬菜占一半以上
+• 每日奶类 300-500g，补充钙质
+• 每周吃鱼 ≥ 2 次，摄入优质蛋白和DHA
+• 每日控油 25-30g，添加糖摄入量 ≤ 25g
   `;
   document.getElementById('reportContent').textContent = report;
 }
 
 // ==============================
-// 食谱推荐
+// 个性化智能食谱推荐（减脂/增肌/维持/孕妇）
 // ==============================
 function genRecipe() {
   const mode = state.profile.mode;
   let recipes = [];
+
   if (mode === 'lose') {
     recipes = [
       {
-        name: '减脂早餐：全麦吐司+鸡蛋+无糖酸奶',
-        desc: '全麦吐司1片+水煮蛋1个+无糖酸奶150g+小番茄5颗，热量约350kcal，高蛋白高纤维。'
+        name: '🥣 减脂早餐：全麦吐司+水煮蛋+无糖酸奶',
+        desc: '全麦吐司1片 + 水煮蛋1个 + 无糖酸奶150g + 小番茄5颗，热量≈350kcal，高蛋白高纤维，饱腹感强，延缓饥饿。'
       },
       {
-        name: '减脂午餐：杂粮饭+鸡胸肉+西兰花',
-        desc: '杂粮饭100g+香煎鸡胸肉120g+清炒西兰花200g，热量约500kcal，蛋白充足。'
+        name: '🍱 减脂午餐：杂粮饭+香煎鸡胸肉+清炒西兰花',
+        desc: '杂粮饭100g + 香煎鸡胸肉120g（无油） + 清炒西兰花200g，热量≈500kcal，蛋白质充足，碳水适中，满足午餐供能。'
       },
       {
-        name: '减脂晚餐：豆腐蔬菜汤+红薯',
-        desc: '嫩豆腐150g+菠菜150g+菌菇煮汤+小红薯150g，热量约300kcal，清淡饱腹。'
+        name: '🍲 减脂晚餐：豆腐蔬菜汤+小红薯',
+        desc: '嫩豆腐150g + 菠菜150g + 菌菇50g煮汤 + 小红薯150g，热量≈300kcal，清淡低卡，高纤维，睡前无负担。'
+      },
+      {
+        name: '🍎 减脂加餐：苹果+杏仁5颗',
+        desc: '中等苹果1个 + 原味杏仁5颗，热量≈120kcal，补充维生素和健康脂肪，避免正餐过量进食。'
       }
     ];
   } else if (mode === 'gain') {
     recipes = [
       {
-        name: '增肌早餐：燕麦+牛奶+鸡蛋+坚果',
-        desc: '燕麦50g+牛奶300ml+全蛋2个+杏仁10g，热量约550kcal，高蛋白高碳水。'
+        name: '🥣 增肌早餐：燕麦+牛奶+全蛋+坚果',
+        desc: '纯燕麦50g + 全脂牛奶300ml + 水煮全蛋2个 + 原味杏仁10g，热量≈550kcal，高蛋白+优质复合碳水，为增肌提供基础。'
       },
       {
-        name: '增肌午餐：糙米饭+瘦牛肉+彩椒',
-        desc: '糙米饭150g+瘦牛肉150g+彩椒200g，热量约650kcal，增肌友好。'
+        name: '🍱 增肌午餐：糙米饭+瘦牛肉+彩椒炒西兰花',
+        desc: '糙米饭150g + 瘦牛肉150g + 彩椒50g+西兰花200g，热量≈650kcal，足量优质蛋白+复合碳水，支撑肌肉合成。'
       },
       {
-        name: '增肌晚餐：三文鱼+土豆+芦笋',
-        desc: '三文鱼150g+烤土豆200g+芦笋150g，热量约600kcal，优质脂肪充足。'
+        name: '🍲 增肌晚餐：三文鱼+烤土豆+清炒芦笋',
+        desc: '三文鱼150g + 烤土豆200g + 清炒芦笋150g，热量≈600kcal，优质脂肪+高蛋白，促进训练后肌肉恢复。'
+      },
+      {
+        name: '🥛 增肌加餐：无糖酸奶+香蕉',
+        desc: '无糖酸奶200g + 香蕉1根，热量≈250kcal，快速补充碳水和蛋白，适合训练后加餐。'
       }
     ];
   } else if (mode === 'pregnant') {
     recipes = [
       {
-        name: '孕妇早餐：小米粥+鸡蛋+牛奶+苹果',
-        desc: '小米粥1碗+水煮蛋1个+牛奶250ml+苹果1个，温和易消化，补铁补钙。'
+        name: '🥣 孕妇早餐：小米粥+鸡蛋+牛奶+苹果',
+        desc: '小米粥1碗（约100g） + 水煮蛋1个 + 纯牛奶250ml + 中等苹果1个，温和易消化，补铁补钙补叶酸，满足孕期基础营养。'
       },
       {
-        name: '孕妇午餐：杂粮饭+清蒸鱼+菠菜',
-        desc: '杂粮饭100g+清蒸鲈鱼150g+清炒菠菜200g，优质蛋白+叶酸丰富。'
+        name: '🍱 孕妇午餐：杂粮饭+清蒸鲈鱼+清炒菠菜',
+        desc: '杂粮饭100g + 清蒸鲈鱼150g + 清炒菠菜200g，优质蛋白+DHA+铁元素，孕期胎儿发育必备营养，清淡无刺激。'
       },
       {
-        name: '孕妇晚餐：虾仁豆腐+西兰花+红薯',
-        desc: '虾仁100g+嫩豆腐150g+西兰花150g+小红薯150g，清淡营养，补钙补铁。'
+        name: '🍲 孕妇晚餐：虾仁豆腐+西兰花+小红薯',
+        desc: '鲜虾仁100g + 嫩豆腐150g + 清炒西兰花150g + 小红薯150g，补钙补铁补蛋白，清淡营养，减轻孕期肠胃负担。'
+      },
+      {
+        name: '🍓 孕妇加餐：原味酸奶+草莓',
+        desc: '原味酸奶150g + 草莓10颗，热量≈150kcal，补钙+维生素C，促进铁吸收，缓解孕期便秘。'
       }
     ];
   } else {
+    // maintain 日常维持
     recipes = [
       {
-        name: '维持早餐：燕麦粥+鸡蛋+小番茄',
-        desc: '燕麦粥1碗+水煮蛋1个+小番茄5颗，热量约400kcal，均衡营养。'
+        name: '🥣 维持早餐：燕麦粥+水煮蛋+小番茄',
+        desc: '纯燕麦50g煮制 + 水煮蛋1个 + 小番茄5颗，热量≈400kcal，均衡营养，稳定血糖，开启活力一天。'
       },
       {
-        name: '维持午餐：糙米饭+瘦牛肉+西兰花',
-        desc: '糙米饭120g+瘦牛肉120g+西兰花200g，热量约550kcal，均衡供能。'
+        name: '🍱 维持午餐：糙米饭+瘦牛肉+西兰花炒胡萝卜',
+        desc: '糙米饭120g + 瘦牛肉120g + 西兰花150g+胡萝卜50g，热量≈550kcal，均衡供能，不胖不瘦，适合日常工作。'
       },
       {
-        name: '维持晚餐：鸡胸肉蔬菜沙拉+红薯',
-        desc: '鸡胸肉100g+混合蔬菜200g+小红薯150g，热量约400kcal，清淡均衡。'
+        name: '🍲 维持晚餐：鸡胸肉蔬菜沙拉+小红薯',
+        desc: '鸡胸肉100g + 混合蔬菜200g（生菜/紫甘蓝/黄瓜） + 小红薯150g，热量≈400kcal，清淡均衡，饱腹感强。'
+      },
+      {
+        name: '🥜 维持加餐：原味坚果5颗+橙子',
+        desc: '原味混合坚果5颗 + 中等橙子1个，热量≈150kcal，补充健康脂肪与维生素，缓解下午饥饿。'
       }
     ];
   }
+
   document.getElementById('recipeList').innerHTML = recipes.map(r => `
     <div class="recipe-item">
       <h3>${r.name}</h3>
